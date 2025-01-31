@@ -7,12 +7,12 @@ public class FriendRepository : BaseRepository, IFriendRepository
 {
     public IEnumerable<FriendEntity> FindAllByUserId(int userId)
     {
-        return Query<FriendEntity>(@"select * from friends where user_id = :user_id", new { user_id = userId });
+        return Query<FriendEntity>(@"select * from friends where userId = :user_id", new { user_id = userId });
     }
 
     public int Create(FriendEntity friendEntity)
     {
-        return Execute(@"insert into friends (user_id,friend_id) values (:user_id,:friend_id)", friendEntity);
+        return Execute(@"insert into friends (userId,friendId) values (:UserId,:FriendId)", friendEntity);
     }
 
     public int Delete(int id)

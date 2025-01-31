@@ -1,12 +1,12 @@
 ﻿namespace SocialNetwork.DAL.Entities;
 public class UserEntity
 {
-    public int Id { get; set; }
-    public string? Firstname { get; set; }
-    public string? Lastname { get; set; }
-    public string? Password { get; set; }
-    public string? Email { get; set; }
-    public string? Photo { get; set; }
-    public string? FavoriteMovie { get; set; }
-    public string? FavoriteBook { get; set; }
+    public int Id { get; init; }
+    public string? Firstname { get; init; }
+    public string? Lastname { get; init; }
+    public string? Password { get; init; }
+    public string? Email { get; init; }
+    public string? Photo { get; init; }
+    public string? FavoriteMovie { get; init; }
+    public string? FavoriteBook { get; init; }
 }

@@ -1,15 +1,19 @@
-﻿using SocialNetwork.DAL.Repositories.Interfaces;
-using SocialNetwork.DAL.Repositories;
+﻿using System.ComponentModel.DataAnnotations;
+using SocialNetwork.BLL.Exceptions;
 using SocialNetwork.BLL.Models;
 using SocialNetwork.DAL.Entities;
-using System.ComponentModel.DataAnnotations;
-using SocialNetwork.BLL.Exceptions;
+using SocialNetwork.DAL.Repositories;
+using SocialNetwork.DAL.Repositories.Interfaces;
 
 namespace SocialNetwork.BLL.Services;
 
-public class UserService
+public class UserService(IUserRepository userRepository, IFriendRepository friendRepository)
 {
-    private readonly IUserRepository _userRepository = new UserRepository();
+    private readonly MessageService _messageService = new();
+
+    public UserService() : this(new UserRepository(), new FriendRepository())
+    {
+    }
 
     public void Register(UserRegistrationData userRegistrationData)
     {
@@ -31,7 +35,7 @@ public class UserService
         if (!new EmailAddressAttribute().IsValid(userRegistrationData.Email))
             throw new ArgumentNullException();
 
-        if (_userRepository.FindByEmail(userRegistrationData.Email) != null)
+        if (userRepository.FindByEmail(userRegistrationData.Email) != null)
             throw new ArgumentNullException();
 
         var userEntity = new UserEntity
@@ -42,15 +46,15 @@ public class UserService
             Email = userRegistrationData.Email
         };
 
-        if (_userRepository.Create(userEntity) == 0)
+        if (userRepository.Create(userEntity) == 0)
             throw new Exception();
 
     }
 
     public User Authenticate(UserAuthenticationData userAuthenticationData)
     {
-        var findUserEntity = _userRepository.FindByEmail(userAuthenticationData.Email);
-        if (findUserEntity is null) throw new UserNotFoundException(userAuthenticationData.Email);
+        var findUserEntity = userRepository.FindByEmail(userAuthenticationData.Email);
+        if (findUserEntity is null) throw new UserNotFoundException();
 
         if (findUserEntity.Password != userAuthenticationData.Password)
             throw new WrongPasswordException();
@@ -60,17 +64,25 @@ public class UserService
 
     public User FindByEmail(string? email)
     {
-        var findUserEntity = _userRepository.FindByEmail(email);
-        if (findUserEntity is null) throw new UserNotFoundException(email);
+        var findUserEntity = userRepository.FindByEmail(email);
+        if (findUserEntity is null) throw new UserNotFoundException();
 
         return ConstructUserModel(findUserEntity);
     }
 
-    public void Update(User user)
+    public User FindById(int id)
+    {
+        var findUserEntity = userRepository.FindById(id);
+        if (findUserEntity is null) throw new UserNotFoundException();
+
+        return ConstructUserModel(findUserEntity);
+    }
+
+    public void Update(User? user)
     {
         var updatableUserEntity = new UserEntity
         {
-            Id = user.Id,
+            Id = user!.Id,
             Firstname = user.FirstName,
             Lastname = user.LastName,
             Password = user.Password,
@@ -80,12 +92,37 @@ public class UserService
             FavoriteBook = user.FavoriteBook
         };
 
-        if (_userRepository.Update(updatableUserEntity) == 0)
+        if (userRepository.Update(updatableUserEntity) == 0)
+            throw new Exception();
+    }
+
+    private IEnumerable<User?> GetFriendsByUserId(int userId)
+    {
+        return friendRepository.FindAllByUserId(userId)
+            .Select(friendsEntity => FindById(friendsEntity.FriendId));
+    }
+
+    public void AddFriend(UserAddingFriendData userAddingFriendData)
+    {
+        var findUserEntity = userRepository.FindByEmail(userAddingFriendData.FriendEmail);
+        if (findUserEntity is null) throw new UserNotFoundException();
+
+        var friendEntity = new FriendEntity
+        {
+            UserId = userAddingFriendData.UserId,
+            FriendId = findUserEntity.Id
+        };
+
+        if (friendRepository.Create(friendEntity) == 0)
             throw new Exception();
     }
 
     private User ConstructUserModel(UserEntity userEntity)
     {
+        var incomingMessages = _messageService.GetIncomingMessagesByUserId(userEntity.Id);
+        var outgoingMessages = _messageService.GetOutcomingMessagesByUserId(userEntity.Id);
+        var friends = GetFriendsByUserId(userEntity.Id);
+
         return new User(userEntity.Id,
             userEntity.Firstname,
             userEntity.Lastname,
@@ -93,6 +130,9 @@ public class UserService
             userEntity.Email,
             userEntity.Photo,
             userEntity.FavoriteMovie,
-            userEntity.FavoriteBook);
+            userEntity.FavoriteBook,
+            incomingMessages,
+            outgoingMessages,
+            friends);
     }
 }

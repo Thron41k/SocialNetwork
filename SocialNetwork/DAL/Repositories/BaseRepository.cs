@@ -1,5 +1,5 @@
-﻿using System.Data.SQLite;
-using System.Data;
+﻿using System.Data;
+using System.Data.SQLite;
 using Dapper;
 
 namespace SocialNetwork.DAL.Repositories;
@@ -22,9 +22,17 @@ public class BaseRepository
 
     protected int Execute(string sql, object? parameters = null)
     {
-        using var connection = CreateConnection();
-        connection.Open();
-        return connection.Execute(sql, parameters);
+        try
+        {
+            using var connection = CreateConnection();
+            connection.Open();
+            return connection.Execute(sql, parameters);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     private IDbConnection CreateConnection()

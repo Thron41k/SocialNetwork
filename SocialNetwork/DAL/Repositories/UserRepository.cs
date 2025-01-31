@@ -8,7 +8,7 @@ public class UserRepository : BaseRepository, IUserRepository
     public int Create(UserEntity userEntity)
     {
         return Execute(@"insert into users (firstname,lastname,password,email) 
-                             values (:firstname,:lastname,:password,:email)", userEntity);
+                             values (:Firstname,:Lastname,:Password,:Email)", userEntity);
     }
 
     public IEnumerable<UserEntity> FindAll()
@@ -28,8 +28,8 @@ public class UserRepository : BaseRepository, IUserRepository
 
     public int Update(UserEntity userEntity)
     {
-        return Execute(@"update users set firstname = :firstname, lastname = :lastname, password = :password, email = :email,
-                             photo = :photo, favorite_movie = :favorite_movie, favorite_book = :favorite_book where id = :id", userEntity);
+        return Execute(@"update users set firstname = :Firstname, lastname = :Lastname, password = :Password, email = :Email,
+                             photo = :Photo, favoriteMovie = :FavoriteMovie, favoriteBook = :FavoriteBook where id = :Id", userEntity);
     }
 
     public int DeleteById(int id)
