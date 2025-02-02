@@ -34,9 +34,9 @@ public class RegistrationView(UserService? userService)
             AlertMessage.Show("Введите корректное значение.");
         }
 
-        catch (Exception)
+        catch (Exception e)
         {
-            AlertMessage.Show("Произошла ошибка при регистрации.");
+            AlertMessage.Show($"Произошла ошибка при регистрации.{e.Message}");
         }
     }
 }

@@ -46,7 +46,7 @@ public class UserServiceTests
             Password = "password123",
             Email = "invalid-email"
         };
-        Throws<ArgumentNullException>(() => _userService.Register(userRegistrationData));
+        Throws<ArgumentException>(() => _userService.Register(userRegistrationData));
     }
 
     [Test]
@@ -60,7 +60,7 @@ public class UserServiceTests
             Email = "man.strange@example.com"
         };
         _userRepositoryMock.Setup(repo => repo.FindByEmail(userRegistrationData.Email)).Returns(new UserEntity());
-        Throws<ArgumentNullException>(() => _userService.Register(userRegistrationData));
+        Throws<ArgumentException>(() => _userService.Register(userRegistrationData));
     }
 
     [Test]
